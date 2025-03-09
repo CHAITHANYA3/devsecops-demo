@@ -120,12 +120,12 @@ jobs:
           load: true
 
       - name: Debug Image Reference
-        run: echo "image-ref:${{ steps.meta.outputs.images }}"
+        run: echo "IMAGE_NAME:${{ steps.meta.outputs.images }}"
       
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
