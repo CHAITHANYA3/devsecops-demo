@@ -5,6 +5,8 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'kubernetes/deployment.yaml'  # Ignore changes to this file to prevent loops
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
@@ -25,7 +27,6 @@ jobs:
       
       - name: Run tests
         run: npm test || echo "No tests found, would add tests in a real project"
-
 
   lint:
     name: Static Code Analysis
@@ -80,7 +81,7 @@ jobs:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
     outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
+      image_tag: ${{ steps.set_output.outputs.image_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -105,7 +106,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,format=long
             type=ref,event=branch
@@ -115,14 +116,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           load: true
-
-      - name: Debug Image Reference
-        run: echo "IMAGE_NAME:${{ steps.meta.outputs.images }}"
-
+      
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -134,7 +132,7 @@ jobs:
          vuln-type: 'os,library'
          scanners: 'vuln'
          severity: 'CRITICAL,HIGH'
-               
+      
       - name: Push Docker image
         uses: docker/build-push-action@v5
         with:
