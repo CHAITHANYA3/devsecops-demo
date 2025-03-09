@@ -118,6 +118,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           load: true
+
+      - name: Debug Image Reference
+        run: echo "image-ref:${{ steps.meta.outputs.images }}"
       
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
